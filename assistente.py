@@ -24,8 +24,6 @@ sns.set()
 from modules import carrega_agenda, comandos_respostas
 comandos = comandos_respostas.comandos
 respostas = comandos_respostas.respostas
-#print(comandos)
-#print(respostas)
 
 meu_nome = 'Calliope'
 
@@ -34,16 +32,12 @@ chrome_path = 'C:/Program Files/Google/Chrome/Application/chrome.exe %s'
 def search(frase):
         wb.get(chrome_path).open('https://www.google.com/search?q=' + frase)
 
-#search('Deusa Artemis')
-
 def speak(audio):
     engine = pyttsx3.init()
     engine.setProperty('rate', 120)
     engine.setProperty('volume', 1)
     engine.say(audio)
     engine.runAndWait()
-
-#speak('Test Test One Two Three')
 
 def listen_microphone():
     microfone = sr.Recognizer()
@@ -72,9 +66,6 @@ def load_model_by_name(model_type):
         SAMPLE_RATE = 48000
     return model, model_dict, SAMPLE_RATE
 
-#print(load_model_by_name('EMOÇÃO'))
-#print(load_model_by_name('EMOÇÃO')[0].summary())
-
 model_type = 'EMOÇÃO'
 loaded_model = load_model_by_name(model_type)
 
@@ -84,29 +75,19 @@ loaded_model = load_model_by_name(model_type)
 def predict_sound(AUDIO, SAMPLE_RATE, plot = True):
     results = []
     wav_data, sample_rate = librosa.load(AUDIO, sr=SAMPLE_RATE)
-    #print(wav_data)
-    #print(wav_data.shape)
-    # https: // librosa.org / doc / main / generated / librosa.effects.trim.html
+
     clip, index = librosa.effects.trim(wav_data, top_db=60, frame_length=512, hop_length=64)
     splitted_audio_data = tf.signal.frame(clip, sample_rate, sample_rate, pad_end=True, pad_value=0)
     for i, data in enumerate(splitted_audio_data.numpy()):
-        #print('Audio split: ', i)
-        #print(data)
-        #print(data.shape)
-        # http://www.midiacom.uff.br/debora/images/disciplinas/2018-2/smm/trabalhos/Apresentacao-MFCC.pdf
         mfccs_features = librosa.feature.mfcc(y = data, sr = sample_rate, n_mfcc=40)
-        #print(mfccs_features.shape)
-        #print(mfccs_features)
+
         mfccs_scaled_features = np.mean(mfccs_features.T, axis = 0)
         mfccs_scaled_features = mfccs_scaled_features.reshape(1, -1)
-        #print(mfccs_scaled_features.shape)
-        # batch
+
         mfccs_scaled_features = mfccs_scaled_features[:,:,np.newaxis]
-        #print(mfccs_scaled_features.shape)
 
         predictions = loaded_model[0].predict(mfccs_scaled_features, batch_size=32)
-        #print(predictions)
-        #print(predictions.sum())
+
         if plot:
             plt.figure(figsize=(len(splitted_audio_data), 5))
             plt.barh(loaded_model[1], predictions[0])
@@ -114,22 +95,16 @@ def predict_sound(AUDIO, SAMPLE_RATE, plot = True):
             plt.show()
 
         predictions = predictions.argmax(axis = 1)
-        #print(predictions)
+
         predictions = predictions.astype(int).flatten()
         predictions = loaded_model[1][predictions[0]]
         results.append(predictions)
-        #print(results)
 
         result_str = 'PART ' + str(i) + ': ' + str(predictions).upper()
-        #print(result_str)
 
     count_results = [[results.count(x), x] for x in set(results)]
-    #print(count_results)
 
-    #print(max(count_results))
     return max(count_results)
-
-#predict_sound('triste.wav', loaded_model[2], plot=True)
 
 def play_music_youtube(emocao):
     play = False
@@ -146,11 +121,6 @@ def test_models():
     prediction = predict_sound(audio_source, loaded_model[2], plot = False)
     return prediction
 
-#play_music_youtube('triste')
-#emocao = predict_sound('triste.wav', loaded_model[2], plot=False)
-#print(emocao)
-#play_music_youtube(emocao[1])
-
 #fimemocao
 
 playing = False
@@ -165,15 +135,14 @@ while (1):
         result = str(result.split(meu_nome + ' ')[1])
         result = result.lower()
         print('Caliope Ready!')
-        #funcoes do assistente
         if result in comandos[0]:
-            # playsound('n2.mp3')
+            playsound('n2.mp3')
             speak('At this point my functions are: ' + respostas[0])
 
         #
         if result in comandos[1]:
-            # playsound('n2.mp3')
-            speak('Pode falar!')
+            playsound('n2.mp3')
+            speak('Go ahead!')
             result = listen_microphone()
             anotacao = open('anotacao.txt', mode='a+', encoding='utf-8')
             anotacao.write(result + '\n')
@@ -190,25 +159,25 @@ while (1):
                 speak('Ok!')
 
         if result in comandos[2]:
-            # playsound('n2.mp3')
+            playsound('n2.mp3')
             speak(''.join(random.sample(respostas[2], k=1)))
             result = listen_microphone()
             search(result)
 
         #falar a hora
         if result in comandos[3]:
-            # playsound('n2.mp3')
+            playsound('n2.mp3')
             speak('It is ' + datetime.datetime.now().strftime('%H:%M'))
 
         #falar a data
         if result in comandos[4]:
-            # playsound('n2.mp3')
+            playsound('n2.mp3')
             speak('Today is: ' + date[0] + ' of ' + date[1])
 
         # analise de emoção
         if result in comandos[5]:
             mode_control = True
-            # playsound('n1.mp3')
+            playsound('n1.mp3')
             speak('Emotion Analisys Undergoing!')
 
         if mode_control:
@@ -221,7 +190,7 @@ while (1):
 
         #verificar agenda
         if result in comandos[6]:
-            # playsound('n2.mp3')
+            playsound('n2.mp3')
             if carrega_agenda.carrega_agenda():
                 speak("This are the events scheduled for today:")
                 for i in range(len(carrega_agenda.carrega_agenda()[1])):
