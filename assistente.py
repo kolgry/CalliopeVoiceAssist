@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set()
 
-from modules import carrega_agenda, comandos_respostas
+from modules import carrega_agenda, comandos_respostas, getPoem
 comandos = comandos_respostas.comandos
 respostas = comandos_respostas.respostas
 
@@ -201,6 +201,31 @@ while (1):
                     speak(carrega_agenda.carrega_agenda()[1][i] + ' ' + carrega_agenda.carrega_agenda()[0][i] + ' scheduled to ' + str(carrega_agenda.carrega_agenda()[2][i]))
                 else:
                     speak('"There are no events scheduled for today starting from the current time!')
+
+        if result in comandos[7]:
+            playsound('n2.mp3')
+            speak(''.join(random.sample(respostas[5], k=1)))
+
+
+            title, author, content = getPoem.get_random_poem()
+
+            if content is None:
+                speak('Sorry, I could not load a poem at this moment.')
+            else:
+
+                if title and author:
+                    speak(f'The poem is titled: {title}, by {author}')
+                elif title:
+                    speak(f'The poem is titled: {title}')
+                elif author:
+                    speak(f'This poem is by {author}')
+
+                lines = str(content).split('\n')
+                for line in lines:
+                    if line.strip():
+                        speak(line)
+
+                speak('That was the poem!')
 
         if result == 'quit':
             speak(''.join(random.sample(respostas[4], k=1)))
