@@ -34,6 +34,10 @@ def search(frase):
 
 def speak(audio):
     engine = pyttsx3.init()
+
+    voices = engine.getProperty('voices')
+
+    engine.setProperty('voice', voices[1].id)
     engine.setProperty('rate', 120)
     engine.setProperty('volume', 1)
     engine.say(audio)
@@ -134,7 +138,7 @@ while (1):
     if meu_nome in result:
         result = str(result.split(meu_nome + ' ')[1])
         result = result.lower()
-        print('Caliope Ready!')
+        print('Calliope Ready!')
         if result in comandos[0]:
             playsound('n2.mp3')
             speak('At this point my functions are: ' + respostas[0])
