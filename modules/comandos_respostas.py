@@ -12,7 +12,7 @@ comandos = [funcoes, lembretes, ajuda, horas, data, analysis_mode, agenda, poema
 
 
 # Respostas
-funcionalidades = 'Record reminders, search on Google, tell the time, tell the date, tell scheduled events for the day. I also have analysis mode which, when activated, I analyze your emotion based on your voice'
+funcionalidades = 'Record reminders, search on Google, tell the time, tell the date, tell scheduled events for the day. I am also able to recite poems!'
 respostas_conclusao = ['Ok!', 'Done!', 'Completed!', 'All set!', 'Finished!']
 perguntas = ['How can I help?', 'Ok, let\'s go!', 'Right, just say it!']
 respostas_agradecimento = ['If you need anything just call!', 'I\'m here if you need anything!']
