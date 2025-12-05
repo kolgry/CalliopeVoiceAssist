@@ -1,5 +1,6 @@
 import datetime
 import pandas as pd
+import os
 
 # Obter data e hora atuais
 agora = datetime.datetime.now()
@@ -8,9 +9,15 @@ minuto_atual = agora.minute
 data_atual = agora.date()
 ano_atual = agora.year
 
-# Carregar planilha
-planilha_agenda = 'C:/Users/Vitor/PycharmProjects/PythonProject1/agenda.xlsx'
-agenda = pd.read_excel(planilha_agenda)
+# Carregar planilha - usar o arquivo local no diretório raiz
+planilha_agenda = 'agenda.xlsx'
+
+# Verificar se o arquivo existe, se não, criar uma agenda vazia
+if not os.path.exists(planilha_agenda):
+    print(f"[INFO] Arquivo {planilha_agenda} não encontrado. Criando agenda vazia...")
+    agenda = pd.DataFrame()
+else:
+    agenda = pd.read_excel(planilha_agenda)
 
 
 # Função para converter diferentes formatos de data
