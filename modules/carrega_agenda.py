@@ -10,7 +10,7 @@ hora_atual, minuto_atual = datetime.datetime.time(hora_atual).hour, datetime.dat
 data_atual = datetime.datetime.date(datetime.datetime.today())
 #print('Data atual:', data_atual)
 
-planilha_agenda = '/Users/jonesgranatyr/Documents/Ensino/IA Expert/Cursos/Assistente Virtual/curso_assistente/agenda.xlsx'
+planilha_agenda = 'C:/Users/Vitor/PycharmProjects/PythonProject1/agenda.xlsx'
 agenda = pd.read_excel(planilha_agenda)
 #print(agenda)
 

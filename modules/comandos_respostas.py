@@ -1,24 +1,21 @@
 # Comandos
-funcoes = ['o que você pode fazer', 'o que você faz', 'funcionalidades', 'o que você sabe fazer', 'o que mais você sabe fazer']
-lembretes = ['anotação', 'anotar', 'lembre', 'nova anotação', 'novo lembrete', 'lembrar', 'lembrete', 'anote', 'mais uma anotação', 'anotar novamente', 'anote novamente', 'nota']
-ajuda = ['pesquisar', 'preciso de ajuda', 'ajuda', 'pode me ajudar', 'estou com uma dúvida', 'tenho uma dúvida']
-horas = ['que horas são', 'hora', 'hora agora', 'que horas são agora', 'qual é a hora']
-data = ['que dia é hoje', 'que dia é', 'que dia hoje']
-analysis_mode = ['modo de emoção', 'ativar emoção']
-agenda = ['eventos hoje', 'agenda hoje', 'agenda', 'compromissos hoje', 'eventos de hoje', 'compromissos de hoje', 'eventos para hoje', 'agenda hoje']
+funcoes = ['what can you do', 'what do you do', 'functionalities', 'what do you know how to do', 'what else do you know how to do']
+lembretes = ['note', 'take note', 'remember', 'new note', 'new reminder', 'remind', 'reminder', 'write down', 'another note', 'take note again', 'write down again', 'note']
+ajuda = ['search', 'i need help', 'help', 'can you help me', 'i have a question', 'i have a doubt']
+horas = ['what time is it', 'time', 'time now', 'what time is it now', 'what is the time']
+data = ['what day is today', 'what day is it', 'what day today']
+analysis_mode = ['emotion mode', 'activate emotion']
+agenda = ['events today', 'schedule today', 'schedule', 'appointments today', 'today\'s events', 'today\'s appointments', 'events for today', 'schedule today']
 
 comandos = [funcoes, lembretes, ajuda, horas, data, analysis_mode, agenda]
-#print(comandos)
-#print(comandos[2])
 
 # Respostas
-funcionalidades = 'Gravar lembretes, fazer pesquisas no Google, falar as horas, falar a data, falar eventos agendados para o dia. Também tenho o modo de análise que, quando ativado, faço a análise da sua emoção baseado na sua voz'
-respostas_conclusao = ['Ok!', 'Feito!', 'Concluído!', 'Tudo certo!', 'Terminado!']
-perguntas = ['Como posso ajudar?', 'Ok, vamos lá!', 'Certo, é só falar!']
-respostas_agradecimento = ['Se precisar é só chamar!', 'Qualquer coisa estou aqui!']
-despedida = ['Até mais!', 'Até breve!', 'Até logo!', 'Até a próxima']
+funcionalidades = 'Record reminders, search on Google, tell the time, tell the date, tell scheduled events for the day. I also have analysis mode which, when activated, I analyze your emotion based on your voice'
+respostas_conclusao = ['Ok!', 'Done!', 'Completed!', 'All set!', 'Finished!']
+perguntas = ['How can I help?', 'Ok, let\'s go!', 'Right, just say it!']
+respostas_agradecimento = ['If you need anything just call!', 'I\'m here if you need anything!']
+despedida = ['See you!', 'See you soon!', 'Goodbye!', 'Until next time']
 
 respostas = [funcionalidades, respostas_conclusao, perguntas, respostas_agradecimento, despedida]
 
-#print(respostas)
-#print(respostas[1])
+
