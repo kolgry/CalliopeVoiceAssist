@@ -12,6 +12,10 @@ import numpy as np
 import librosa
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+from assistente import browser_manager
+from modules.browserManager import BrowserManager
+
 sns.set()
 
 from modules import carrega_agenda, comandos_respostas, getPoem
@@ -23,6 +27,7 @@ class AssistenteWorker(QThread):
     
     def __init__(self):
         super().__init__()
+        self.browser_manager = BrowserManager()
         self.meu_nome = 'Calliope'
         self.chrome_path = 'C:/Program Files/Google/Chrome/Application/chrome.exe %s'
         
@@ -77,8 +82,8 @@ class AssistenteWorker(QThread):
         return frase
 
     def search(self, frase):
-        """Busca no Google"""
-        wb.get(self.chrome_path).open('https://www.google.com/search?q=' + frase)
+        url = 'https://www.google.com/search?q=' + frase
+        browser_manager.open_url(url)
 
     def predict_sound(self, AUDIO, SAMPLE_RATE, plot=True):
         """Prediz emoção do áudio"""
@@ -119,11 +124,11 @@ class AssistenteWorker(QThread):
         """Toca música no YouTube baseado na emoção"""
         play = False
         if emocao == 'sad' or emocao == 'fear':
-            wb.get(self.chrome_path).open('https://www.youtube.com/watch?v=k32IPg4dbz0&ab_channel=Amelhorm%C3%BAsicainstrumental')
-            play = True
-        if emocao == 'angry' or emocao == 'surprised':
-            wb.get(self.chrome_path).open('https://www.youtube.com/watch?v=pWjmpSD-ph0&ab_channel=CassioToledo')
-            play = True
+            url = 'https://www.youtube.com/watch?v=k32IPg4dbz0&ab_channel=Amelhorm%C3%BAsicainstrumental'
+            play = browser_manager.open_url(url)
+        elif emocao == 'angry' or emocao == 'surprised':
+            url = 'https://www.youtube.com/watch?v=pWjmpSD-ph0&ab_channel=CassioToledo'
+            play = browser_manager.open_url(url)
         return play
 
     def test_models(self):
