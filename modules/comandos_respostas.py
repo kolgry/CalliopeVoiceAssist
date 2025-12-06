@@ -7,8 +7,11 @@ data = ['what day is today', 'what day is it', 'what day today']
 analysis_mode = ['emotion mode', 'activate emotion']
 agenda = ['events today', 'schedule today', 'schedule', 'appointments today', 'today\'s events', 'today\'s appointments', 'events for today', 'schedule today']
 poemas = ['read a poem', 'poem', 'recite a poem', 'tell me a poem', 'read me a poem', 'say a poem', 'poetry']
+poemas_curtos = ['read a short poem', 'short poem', 'quick poem']
+poemas_medios = ['read a medium poem', 'medium poem', 'regular poem']
 
-comandos = [funcoes, lembretes, ajuda, horas, data, analysis_mode, agenda, poemas]
+
+comandos = [funcoes, lembretes, ajuda, horas, data, analysis_mode, agenda, poemas, poemas_curtos, poemas_medios]
 
 # Respostas
 funcionalidades = 'Record reminders, search on Google, tell the time, tell the date, tell scheduled events for the day. I am also able to recite poems!'

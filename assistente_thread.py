@@ -209,19 +209,19 @@ class AssistenteWorker(QThread):
                             else:
                                 self.speak('"There are no events scheduled for today starting from the current time!')
 
-                    if result in comandos[7]:
+                    if result in comandos[7]:  # Regular poems
                         playsound('n2.mp3')
                         self.speak(''.join(random.sample(respostas[5], k=1)))
 
                         print('[INFO] Carregando poema...')
-                        title, author, content = getPoem.get_random_poem()
+                        title, author, content = getPoem.get_random_poem(truncate=True, filter_by_size=True)
 
                         if content is None:
                             self.speak('Sorry, I could not load a poem at this moment.')
                             print('[ERROR] Falha ao carregar poema')
                         else:
                             print(f'[INFO] Poema carregado: {title} por {author}')
-                            
+
                             if title and author:
                                 self.speak(f'The poem is titled: {title}, by {author}')
                             elif title:
@@ -235,6 +235,56 @@ class AssistenteWorker(QThread):
                                 clean_line = line.strip()
                                 if clean_line:
                                     print(f'[INFO] Lendo linha {i + 1}: {clean_line[:50]}...')
+                                    self.speak(clean_line)
+
+                            self.speak('That was the poem!')
+
+                    if result in comandos[8]:  # Short poems - NEW
+                        playsound('n2.mp3')
+                        self.speak('Here is a short poem for you!')
+
+                        print('[INFO] Carregando poema curto...')
+                        title, author, content = getPoem.get_short_poem()
+
+                        if content is None:
+                            self.speak('Sorry, I could not load a poem at this moment.')
+                        else:
+                            if title and author:
+                                self.speak(f'The poem is titled: {title}, by {author}')
+                            elif title:
+                                self.speak(f'The poem is titled: {title}')
+                            elif author:
+                                self.speak(f'This poem is by {author}')
+
+                            lines = str(content).split('\n')
+                            for i, line in enumerate(lines):
+                                clean_line = line.strip()
+                                if clean_line:
+                                    self.speak(clean_line)
+
+                            self.speak('That was the poem!')
+
+                    if result in comandos[9]:  # Medium poems - NEW
+                        playsound('n2.mp3')
+                        self.speak('Here is a medium length poem for you!')
+
+                        print('[INFO] Carregando poema médio...')
+                        title, author, content = getPoem.get_medium_poem()
+
+                        if content is None:
+                            self.speak('Sorry, I could not load a poem at this moment.')
+                        else:
+                            if title and author:
+                                self.speak(f'The poem is titled: {title}, by {author}')
+                            elif title:
+                                self.speak(f'The poem is titled: {title}')
+                            elif author:
+                                self.speak(f'This poem is by {author}')
+
+                            lines = str(content).split('\n')
+                            for i, line in enumerate(lines):
+                                clean_line = line.strip()
+                                if clean_line:
                                     self.speak(clean_line)
 
                             self.speak('That was the poem!')

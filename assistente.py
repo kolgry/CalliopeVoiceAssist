@@ -208,7 +208,53 @@ while True:
                 playsound('n2.mp3')
                 speak(''.join(random.sample(respostas[5], k=1)))
 
-                title, author, content = getPoem.get_random_poem()
+                title, author, content = getPoem.get_random_poem(truncate=True, filter_by_size=True)
+
+                if content is None:
+                    speak('Sorry, I could not load a poem at this moment.')
+                else:
+                    if title and author:
+                        speak(f'The poem is titled: {title}, by {author}')
+                    elif title:
+                        speak(f'The poem is titled: {title}')
+                    elif author:
+                        speak(f'This poem is by {author}')
+
+                    lines = str(content).split('\n')
+                    for line in lines:
+                        if line.strip():
+                            speak(line)
+
+                    speak('That was the poem!')
+
+            case 8:  # Short poems - NEW CASE
+                playsound('n2.mp3')
+                speak('Here is a short poem for you!')
+
+                title, author, content = getPoem.get_short_poem()
+
+                if content is None:
+                    speak('Sorry, I could not load a poem at this moment.')
+                else:
+                    if title and author:
+                        speak(f'The poem is titled: {title}, by {author}')
+                    elif title:
+                        speak(f'The poem is titled: {title}')
+                    elif author:
+                        speak(f'This poem is by {author}')
+
+                    lines = str(content).split('\n')
+                    for line in lines:
+                        if line.strip():
+                            speak(line)
+
+                    speak('That was the poem!')
+
+            case 9:  # Medium poems - NEW CASE
+                playsound('n2.mp3')
+                speak('Here is a medium length poem for you!')
+
+                title, author, content = getPoem.get_medium_poem()
 
                 if content is None:
                     speak('Sorry, I could not load a poem at this moment.')
