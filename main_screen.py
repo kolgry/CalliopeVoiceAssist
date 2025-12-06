@@ -3,7 +3,7 @@ import io
 from contextlib import redirect_stdout
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QLabel, QTextEdit
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, Signal, QThread, QObject
-from PySide6.QtGui import QFont, QPalette, QColor
+from PySide6.QtGui import QFont, QPalette, QColor, QMovie
 from PySide6.QtCore import QSize
 
 class StatusSignal(QObject):
@@ -16,8 +16,12 @@ class MainScreen(QMainWindow):
         self.setWindowTitle("Caliope Voice Assistant")
         self.setFixedSize(700, 600)
         self.setup_ui()
-        self.start_animation()
         self.setup_status_signal()
+        
+        # Garantir que a janela apareça em primeiro plano
+        self.setWindowState(Qt.WindowActive)
+        self.raise_()
+        self.activateWindow()
 
     def setup_ui(self):
         # Widget central
@@ -46,13 +50,24 @@ class MainScreen(QMainWindow):
         self.title_label.setStyleSheet("color: #4A90E2;")
         layout.addWidget(self.title_label, alignment=Qt.AlignCenter)
         
-        # Indicador visual (pulsação)
-        self.pulse_label = QLabel("●")
-        self.pulse_label.setAlignment(Qt.AlignCenter)
-        pulse_font = QFont("Arial", 50)
-        self.pulse_label.setFont(pulse_font)
-        self.pulse_label.setStyleSheet("color: #4A90E2; margin-top: 10px;")
-        layout.addWidget(self.pulse_label, alignment=Qt.AlignCenter)
+        # Indicador visual (GIF animado)
+        self.indicator_label = QLabel()
+        self.indicator_label.setAlignment(Qt.AlignCenter)
+        self.indicator_label.setFixedSize(150, 150)
+        self.indicator_label.setStyleSheet("background-color: transparent;")
+        
+        # Carregar GIFs
+        self.listening_movie = QMovie("assets/listening.gif")
+        self.listening_movie.setScaledSize(QSize(150, 150))
+        
+        self.responding_movie = QMovie("assets/responding.gif")
+        self.responding_movie.setScaledSize(QSize(150, 150))
+        
+        # Iniciar com listening
+        self.indicator_label.setMovie(self.listening_movie)
+        self.listening_movie.start()
+        
+        layout.addWidget(self.indicator_label, alignment=Qt.AlignCenter)
         
         # Status principal (grande)
         self.status_label = QLabel("Initializing...")
@@ -79,25 +94,32 @@ class MainScreen(QMainWindow):
         self.status_signal.status_changed.connect(self.update_status)
     
     def update_status(self, status_text):
-        """Atualiza o texto de status"""
+        """Atualiza o texto de status e o GIF indicador"""
         # Separar status e informações
         if "|" in status_text:
             status, info = status_text.split("|", 1)
-            self.status_label.setText(status.strip().upper())
-            self.info_label.setText(info.strip())
+            status = status.strip().upper()
+            info = info.strip()
         else:
-            self.status_label.setText(status_text.strip().upper())
-            self.info_label.setText("")
-
-    def start_animation(self):
-        # Timer para alternar opacidade do ponto
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.toggle_opacity)
-        self.timer.start(1000)
+            status = status_text.strip().upper()
+            info = ""
         
-    def toggle_opacity(self):
-        current_style = self.pulse_label.styleSheet()
-        if "opacity: 0.3" in current_style:
-            self.pulse_label.setStyleSheet("color: #4A90E2; margin-top: 5px; opacity: 1.0;")
+        self.status_label.setText(status)
+        self.info_label.setText(info)
+        
+        # Mudar o GIF baseado no status
+        if status == "RESPONDING" or "POEM" in status or status == "RESPONDING":
+            # Usar GIF de respondendo para responding, poems e outros estados de fala
+            self.listening_movie.stop()
+            self.indicator_label.setMovie(self.responding_movie)
+            self.responding_movie.start()
+        elif status == "LISTENING":
+            # Usar GIF de listening
+            self.responding_movie.stop()
+            self.indicator_label.setMovie(self.listening_movie)
+            self.listening_movie.start()
         else:
-            self.pulse_label.setStyleSheet("color: #4A90E2; margin-top: 5px; opacity: 0.3;")
+            # Para outros estados, usar responding
+            self.listening_movie.stop()
+            self.indicator_label.setMovie(self.responding_movie)
+            self.responding_movie.start()
