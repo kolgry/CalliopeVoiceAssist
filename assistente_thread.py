@@ -13,19 +13,21 @@ import librosa
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set()
-
 from modules import carrega_agenda, comandos_respostas, getPoem
+from modules.browserManager import BrowserManager
 comandos = comandos_respostas.comandos
 respostas = comandos_respostas.respostas
 
 class AssistenteWorker(QThread):
     status_updated = Signal(str)
+
+    browser_manager = BrowserManager()
     
     def __init__(self, main_window):
         super().__init__()
         self.main_window = main_window
         self.meu_nome = 'Calliope'
-        self.chrome_path = 'C:/Program Files/Google/Chrome/Application/chrome.exe %s'
+        self.browser_manager = BrowserManager()
         
         self.hour = datetime.datetime.now().strftime('%H:%M')
         self.date = datetime.date.today().strftime('%d/%B/%Y')
@@ -90,7 +92,8 @@ class AssistenteWorker(QThread):
 
     def search(self, frase):
         self.status_updated.emit("search | searching...")
-        wb.get(self.chrome_path).open('https://www.google.com/search?q=' + frase)
+        url = 'https://www.google.com/search?q=' + frase
+        self.browser_manager.open_url(url)
 
     def predict_sound(self, AUDIO, SAMPLE_RATE, plot=True):
         results = []

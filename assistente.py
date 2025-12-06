@@ -20,17 +20,17 @@ import librosa
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set()
-
 from modules import carrega_agenda, comandos_respostas, getPoem
+from modules.browserManager import BrowserManager
 comandos = comandos_respostas.comandos
 respostas = comandos_respostas.respostas
 
 meu_nome = 'Calliope'
 
-chrome_path = 'C:/Program Files/Google/Chrome/Application/chrome.exe %s'
+browser_manager = BrowserManager()
 
 def search(frase):
-        wb.get(chrome_path).open('https://www.google.com/search?q=' + frase)
+        browser_manager.open_url('https://www.google.com/search?q=' + frase)
 
 def speak(audio):
     engine = pyttsx3.init()
