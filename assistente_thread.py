@@ -19,9 +19,6 @@ comandos = comandos_respostas.comandos
 respostas = comandos_respostas.respostas
 
 class AssistenteWorker(QThread):
-    """Executa o assistente em thread separada"""
-    
-    # Sinal para atualizar status na GUI
     status_updated = Signal(str)
     
     def __init__(self, main_window):
@@ -30,19 +27,16 @@ class AssistenteWorker(QThread):
         self.meu_nome = 'Calliope'
         self.chrome_path = 'C:/Program Files/Google/Chrome/Application/chrome.exe %s'
         
-        # Carregar hora e data
         self.hour = datetime.datetime.now().strftime('%H:%M')
         self.date = datetime.date.today().strftime('%d/%B/%Y')
         self.date = self.date.split('/')
         
-        # Carregar modelo
         self.model_type = 'EMOÇÃO'
         self.loaded_model = self.load_model_by_name(self.model_type)
         
         self.playing = False
         self.mode_control = False
         
-        # Conectar signal de status
         self.status_updated.connect(self.main_window.status_signal.status_changed.emit)
 
     def load_model_by_name(self, model_type):
@@ -53,14 +47,7 @@ class AssistenteWorker(QThread):
         return model, model_dict, SAMPLE_RATE
 
     def speak(self, audio, keep_status=None):
-        """Função para falar usando pyttsx3
-        
-        Args:
-            audio: Texto a ser falado
-            keep_status: Se definido, mantém este status em vez de voltar para 'listening'
-        """
         try:
-            # Se há um status a manter, não emite 'responding'
             if keep_status is None:
                 self.status_updated.emit("responding")
             
@@ -72,7 +59,6 @@ class AssistenteWorker(QThread):
             engine.say(str(audio))
             engine.runAndWait()
             
-            # Emite o status apropriado ao final
             if keep_status is not None:
                 self.status_updated.emit(keep_status)
             else:
@@ -85,7 +71,6 @@ class AssistenteWorker(QThread):
                 self.status_updated.emit("listening")
 
     def listen_microphone(self):
-        """Captura áudio do microfone"""
         self.status_updated.emit("listening")
         microfone = sr.Recognizer()
         with sr.Microphone() as source:
@@ -104,12 +89,10 @@ class AssistenteWorker(QThread):
         return frase
 
     def search(self, frase):
-        """Busca no Google"""
         self.status_updated.emit("search | searching...")
         wb.get(self.chrome_path).open('https://www.google.com/search?q=' + frase)
 
     def predict_sound(self, AUDIO, SAMPLE_RATE, plot=True):
-        """Prediz emoção do áudio"""
         results = []
         wav_data, sample_rate = librosa.load(AUDIO, sr=SAMPLE_RATE)
 
@@ -144,7 +127,6 @@ class AssistenteWorker(QThread):
         return max(count_results)
 
     def play_music_youtube(self, emocao):
-        """Toca música no YouTube baseado na emoção"""
         play = False
         if emocao == 'sad' or emocao == 'fear':
             wb.get(self.chrome_path).open('https://www.youtube.com/watch?v=k32IPg4dbz0&ab_channel=Amelhorm%C3%BAsicainstrumental')
@@ -155,13 +137,11 @@ class AssistenteWorker(QThread):
         return play
 
     def test_models(self):
-        """Testa modelo de emoção"""
         audio_source = 'recordings/speech.wav'
         prediction = self.predict_sound(audio_source, self.loaded_model[2], plot=False)
         return prediction
 
     def run(self):
-        """Loop principal do assistente"""
         print('[INFO] Ready to Begin!')
         playsound('n1.mp3')
 
@@ -247,7 +227,6 @@ class AssistenteWorker(QThread):
                         else:
                             print(f'[INFO] Poema carregado: {title} por {author}')
                             
-                            # Criar status text
                             status_text = ''
                             if title and author:
                                 status_text = f'{title} | by {author}'
@@ -256,10 +235,8 @@ class AssistenteWorker(QThread):
                             elif author:
                                 status_text = f'by {author}'
                             
-                            # Emitir status ANTES de falar
                             self.status_updated.emit(status_text)
                             
-                            # Agora falar o título
                             if title and author:
                                 self.speak(f'The poem is titled: {title}, by {author}', keep_status=status_text)
                             elif title:
@@ -273,7 +250,6 @@ class AssistenteWorker(QThread):
                                 clean_line = line.strip()
                                 if clean_line:
                                     print(f'[INFO] Lendo linha {i + 1}: {clean_line[:50]}...')
-                                    # Manter status do poema enquanto recita
                                     self.speak(clean_line, keep_status=status_text)
 
                             self.speak('That was the poem!')
