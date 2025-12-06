@@ -21,8 +21,12 @@ respostas = comandos_respostas.respostas
 class AssistenteWorker(QThread):
     """Executa o assistente em thread separada"""
     
-    def __init__(self):
+    # Sinal para atualizar status na GUI
+    status_updated = Signal(str)
+    
+    def __init__(self, main_window):
         super().__init__()
+        self.main_window = main_window
         self.meu_nome = 'Calliope'
         self.chrome_path = 'C:/Program Files/Google/Chrome/Application/chrome.exe %s'
         
@@ -37,6 +41,9 @@ class AssistenteWorker(QThread):
         
         self.playing = False
         self.mode_control = False
+        
+        # Conectar signal de status
+        self.status_updated.connect(self.main_window.status_signal.status_changed.emit)
 
     def load_model_by_name(self, model_type):
         if model_type == 'EMOÇÃO':
@@ -48,6 +55,7 @@ class AssistenteWorker(QThread):
     def speak(self, audio):
         """Função para falar usando pyttsx3"""
         try:
+            self.status_updated.emit("responding")
             engine = pyttsx3.init()
             voices = engine.getProperty('voices')
             engine.setProperty('voice', voices[1].id)
@@ -55,15 +63,17 @@ class AssistenteWorker(QThread):
             engine.setProperty('volume', 1)
             engine.say(str(audio))
             engine.runAndWait()
+            self.status_updated.emit("listening")
         except Exception as e:
             print(f'Erro ao falar: {e}')
+            self.status_updated.emit("listening")
 
     def listen_microphone(self):
         """Captura áudio do microfone"""
+        self.status_updated.emit("listening")
         microfone = sr.Recognizer()
         with sr.Microphone() as source:
             microfone.adjust_for_ambient_noise(source, duration=0.8)
-            print('Listening...')
             audio = microfone.listen(source)
             with open('recordings/speech.wav', 'wb') as f:
                 f.write(audio.get_wav_data())
@@ -73,11 +83,13 @@ class AssistenteWorker(QThread):
             print('You said:' + frase)
         except sr.UnknownValueError:
             frase = ''
+            self.status_updated.emit("dont understand")
             print('Could not understand audio')
         return frase
 
     def search(self, frase):
         """Busca no Google"""
+        self.status_updated.emit("search | searching...")
         wb.get(self.chrome_path).open('https://www.google.com/search?q=' + frase)
 
     def predict_sound(self, AUDIO, SAMPLE_RATE, plot=True):
@@ -171,6 +183,7 @@ class AssistenteWorker(QThread):
                     if result in comandos[2]:
                         playsound('n2.mp3')
                         self.speak(''.join(random.sample(respostas[2], k=1)))
+                        self.status_updated.emit('search')
                         result = self.listen_microphone()
                         self.search(result)
 
@@ -213,15 +226,20 @@ class AssistenteWorker(QThread):
 
                         if content is None:
                             self.speak('Sorry, I could not load a poem at this moment.')
+                            self.status_updated.emit('Error loading poem')
                             print('[ERROR] Falha ao carregar poema')
                         else:
                             print(f'[INFO] Poema carregado: {title} por {author}')
                             
+                            # Exibir título do poema na tela
                             if title and author:
+                                self.status_updated.emit(f'Poem | {title} by {author}')
                                 self.speak(f'The poem is titled: {title}, by {author}')
                             elif title:
+                                self.status_updated.emit(f'Poem | {title}')
                                 self.speak(f'The poem is titled: {title}')
                             elif author:
+                                self.status_updated.emit(f'Poem | by {author}')
                                 self.speak(f'This poem is by {author}')
 
                             lines = str(content).split('\n')
