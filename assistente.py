@@ -7,6 +7,8 @@ import datetime
 
 from tensorflow.python.ops.metrics_impl import false_negatives
 
+
+
 hour = datetime.datetime.now().strftime('%H:%M')
 print(hour)
 date = datetime.date.today().strftime('%d/%B/%Y')
@@ -21,16 +23,19 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set()
 
+from modules.browserManager import BrowserManager
 from modules import carrega_agenda, comandos_respostas, getPoem
 comandos = comandos_respostas.comandos
 respostas = comandos_respostas.respostas
 
 meu_nome = 'Calliope'
 
-chrome_path = 'C:/Program Files/Google/Chrome/Application/chrome.exe %s'
+
+browser_manager = BrowserManager()
 
 def search(frase):
-        wb.get(chrome_path).open('https://www.google.com/search?q=' + frase)
+    url = 'https://www.google.com/search?q=' + frase
+    browser_manager.open_url(url)
 
 def speak(audio):
     engine = pyttsx3.init()
@@ -113,11 +118,11 @@ def predict_sound(AUDIO, SAMPLE_RATE, plot = True):
 def play_music_youtube(emocao):
     play = False
     if emocao == 'sad' or emocao == 'fear':
-        wb.get(chrome_path).open('https://www.youtube.com/watch?v=k32IPg4dbz0&ab_channel=Amelhorm%C3%BAsicainstrumental')
-        play = True
-    if emocao == 'angry' or emocao == 'surprised':
-        wb.get(chrome_path).open('https://www.youtube.com/watch?v=pWjmpSD-ph0&ab_channel=CassioToledo')
-        play = True
+        url = 'https://www.youtube.com/watch?v=k32IPg4dbz0&ab_channel=Amelhorm%C3%BAsicainstrumental'
+        play = browser_manager.open_url(url)
+    elif emocao == 'angry' or emocao == 'surprised':
+        url = 'https://www.youtube.com/watch?v=pWjmpSD-ph0&ab_channel=CassioToledo'
+        play = browser_manager.open_url(url)
     return play
 
 def test_models():
@@ -203,7 +208,53 @@ while True:
                 playsound('n2.mp3')
                 speak(''.join(random.sample(respostas[5], k=1)))
 
-                title, author, content = getPoem.get_random_poem()
+                title, author, content = getPoem.get_random_poem(truncate=True, filter_by_size=True)
+
+                if content is None:
+                    speak('Sorry, I could not load a poem at this moment.')
+                else:
+                    if title and author:
+                        speak(f'The poem is titled: {title}, by {author}')
+                    elif title:
+                        speak(f'The poem is titled: {title}')
+                    elif author:
+                        speak(f'This poem is by {author}')
+
+                    lines = str(content).split('\n')
+                    for line in lines:
+                        if line.strip():
+                            speak(line)
+
+                    speak('That was the poem!')
+
+            case 8:  # Short poems - NEW CASE
+                playsound('n2.mp3')
+                speak('Here is a short poem for you!')
+
+                title, author, content = getPoem.get_short_poem()
+
+                if content is None:
+                    speak('Sorry, I could not load a poem at this moment.')
+                else:
+                    if title and author:
+                        speak(f'The poem is titled: {title}, by {author}')
+                    elif title:
+                        speak(f'The poem is titled: {title}')
+                    elif author:
+                        speak(f'This poem is by {author}')
+
+                    lines = str(content).split('\n')
+                    for line in lines:
+                        if line.strip():
+                            speak(line)
+
+                    speak('That was the poem!')
+
+            case 9:  # Medium poems - NEW CASE
+                playsound('n2.mp3')
+                speak('Here is a medium length poem for you!')
+
+                title, author, content = getPoem.get_medium_poem()
 
                 if content is None:
                     speak('Sorry, I could not load a poem at this moment.')
