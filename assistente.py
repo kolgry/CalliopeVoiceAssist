@@ -132,57 +132,98 @@ mode_control = False
 print('[INFO] Ready to Begin!')
 playsound('n1.mp3')
 
-while (1):
+while True:
     result = listen_microphone()
 
     if meu_nome in result:
         result = str(result.split(meu_nome + ' ')[1])
         result = result.lower()
-        print('Calliope Ready!')
-        if result in comandos[0]:
-            playsound('n2.mp3')
-            speak('At this point my functions are: ' + respostas[0])
+        print('Caliope Ready!')
 
-        #
-        if result in comandos[1]:
-            playsound('n2.mp3')
-            speak('Go ahead!')
-            result = listen_microphone()
-            anotacao = open('anotacao.txt', mode='a+', encoding='utf-8')
-            anotacao.write(result + '\n')
-            anotacao.close()
-            speak(''.join(random.sample(respostas[1], k=1)))
-            speak('Do you wish i read the reminders?')
-            result = listen_microphone()
-            if result == 'sim' or result == 'pode ler':
-                with open('anotacao.txt') as file_source:
-                    lines = file_source.readlines()
+        command_type = None
+        for i, cmd_list in enumerate(comandos):
+            if result in cmd_list:
+                command_type = i
+                break
+
+        match command_type:
+            case 0:
+                playsound('n2.mp3')
+                speak('At this point my functions are: ' + respostas[0])
+
+            case 1:
+                playsound('n2.mp3')
+                speak('Go ahead!')
+                result = listen_microphone()
+                anotacao = open('anotacao.txt', mode='a+', encoding='utf-8')
+                anotacao.write(result + '\n')
+                anotacao.close()
+                speak(''.join(random.sample(respostas[1], k=1)))
+                speak('Do you wish i read the reminders?')
+                result = listen_microphone()
+                if result == 'sim' or result == 'pode ler':
+                    with open('anotacao.txt') as file_source:
+                        lines = file_source.readlines()
+                        for line in lines:
+                            speak(line)
+                else:
+                    speak('Ok!')
+
+            case 2:
+                playsound('n2.mp3')
+                speak(''.join(random.sample(respostas[2], k=1)))
+                result = listen_microphone()
+                search(result)
+
+            case 3:
+                playsound('n2.mp3')
+                speak('It is ' + datetime.datetime.now().strftime('%H:%M'))
+
+            case 4:
+                playsound('n2.mp3')
+                speak('Today is: ' + date[0] + ' of ' + date[1])
+
+            case 5:
+                mode_control = True
+                playsound('n1.mp3')
+                speak('Emotion Analisys Undergoing!')
+
+            case 6:
+                playsound('n2.mp3')
+                if carrega_agenda.carrega_agenda():
+                    speak("This are the events scheduled for today:")
+                    for i in range(len(carrega_agenda.carrega_agenda()[1])):
+                        speak(carrega_agenda.carrega_agenda()[1][i] + ' ' +
+                              carrega_agenda.carrega_agenda()[0][i] + ' scheduled to ' +
+                              str(carrega_agenda.carrega_agenda()[2][i]))
+                else:
+                    speak("There are no events scheduled for today starting from the current time!")
+
+            case 7:
+                playsound('n2.mp3')
+                speak(''.join(random.sample(respostas[5], k=1)))
+
+                title, author, content = getPoem.get_random_poem()
+
+                if content is None:
+                    speak('Sorry, I could not load a poem at this moment.')
+                else:
+                    if title and author:
+                        speak(f'The poem is titled: {title}, by {author}')
+                    elif title:
+                        speak(f'The poem is titled: {title}')
+                    elif author:
+                        speak(f'This poem is by {author}')
+
+                    lines = str(content).split('\n')
                     for line in lines:
-                        speak(line)
-            else:
-                speak('Ok!')
+                        if line.strip():
+                            speak(line)
 
-        if result in comandos[2]:
-            playsound('n2.mp3')
-            speak(''.join(random.sample(respostas[2], k=1)))
-            result = listen_microphone()
-            search(result)
+                    speak('That was the poem!')
 
-        #falar a hora
-        if result in comandos[3]:
-            playsound('n2.mp3')
-            speak('It is ' + datetime.datetime.now().strftime('%H:%M'))
-
-        #falar a data
-        if result in comandos[4]:
-            playsound('n2.mp3')
-            speak('Today is: ' + date[0] + ' of ' + date[1])
-
-        # analise de emoção
-        if result in comandos[5]:
-            mode_control = True
-            playsound('n1.mp3')
-            speak('Emotion Analisys Undergoing!')
+            case _:
+                pass
 
         if mode_control:
             analyze = test_models()
@@ -192,44 +233,8 @@ while (1):
                 playing = play_music_youtube(analyze[1])
                 break
 
-        #verificar agenda
-        if result in comandos[6]:
-            playsound('n2.mp3')
-            if carrega_agenda.carrega_agenda():
-                speak("This are the events scheduled for today:")
-                for i in range(len(carrega_agenda.carrega_agenda()[1])):
-                    speak(carrega_agenda.carrega_agenda()[1][i] + ' ' + carrega_agenda.carrega_agenda()[0][i] + ' scheduled to ' + str(carrega_agenda.carrega_agenda()[2][i]))
-                else:
-                    speak('"There are no events scheduled for today starting from the current time!')
-
-        if result in comandos[7]:
-            playsound('n2.mp3')
-            speak(''.join(random.sample(respostas[5], k=1)))
-
-
-            title, author, content = getPoem.get_random_poem()
-
-            if content is None:
-                speak('Sorry, I could not load a poem at this moment.')
-            else:
-
-                if title and author:
-                    speak(f'The poem is titled: {title}, by {author}')
-                elif title:
-                    speak(f'The poem is titled: {title}')
-                elif author:
-                    speak(f'This poem is by {author}')
-
-                lines = str(content).split('\n')
-                for line in lines:
-                    if line.strip():
-                        speak(line)
-
-                speak('That was the poem!')
-
         if result == 'quit':
             speak(''.join(random.sample(respostas[4], k=1)))
             break
     else:
         playsound('n3.mp3')
-
