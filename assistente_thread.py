@@ -52,10 +52,18 @@ class AssistenteWorker(QThread):
             SAMPLE_RATE = 48000
         return model, model_dict, SAMPLE_RATE
 
-    def speak(self, audio):
-        """Função para falar usando pyttsx3"""
+    def speak(self, audio, keep_status=None):
+        """Função para falar usando pyttsx3
+        
+        Args:
+            audio: Texto a ser falado
+            keep_status: Se definido, mantém este status em vez de voltar para 'listening'
+        """
         try:
-            self.status_updated.emit("responding")
+            # Se há um status a manter, não emite 'responding'
+            if keep_status is None:
+                self.status_updated.emit("responding")
+            
             engine = pyttsx3.init()
             voices = engine.getProperty('voices')
             engine.setProperty('voice', voices[1].id)
@@ -63,10 +71,18 @@ class AssistenteWorker(QThread):
             engine.setProperty('volume', 1)
             engine.say(str(audio))
             engine.runAndWait()
-            self.status_updated.emit("listening")
+            
+            # Emite o status apropriado ao final
+            if keep_status is not None:
+                self.status_updated.emit(keep_status)
+            else:
+                self.status_updated.emit("listening")
         except Exception as e:
             print(f'Erro ao falar: {e}')
-            self.status_updated.emit("listening")
+            if keep_status is not None:
+                self.status_updated.emit(keep_status)
+            else:
+                self.status_updated.emit("listening")
 
     def listen_microphone(self):
         """Captura áudio do microfone"""
@@ -231,26 +247,37 @@ class AssistenteWorker(QThread):
                         else:
                             print(f'[INFO] Poema carregado: {title} por {author}')
                             
-                            # Exibir título do poema na tela
+                            # Criar status text
+                            status_text = ''
                             if title and author:
-                                self.status_updated.emit(f'Poem | {title} by {author}')
-                                self.speak(f'The poem is titled: {title}, by {author}')
+                                status_text = f'{title} | by {author}'
                             elif title:
-                                self.status_updated.emit(f'Poem | {title}')
-                                self.speak(f'The poem is titled: {title}')
+                                status_text = f'{title}'
                             elif author:
-                                self.status_updated.emit(f'Poem | by {author}')
-                                self.speak(f'This poem is by {author}')
-
+                                status_text = f'by {author}'
+                            
+                            # Emitir status ANTES de falar
+                            self.status_updated.emit(status_text)
+                            
+                            # Agora falar o título
+                            if title and author:
+                                self.speak(f'The poem is titled: {title}, by {author}', keep_status=status_text)
+                            elif title:
+                                self.speak(f'The poem is titled: {title}', keep_status=status_text)
+                            elif author:
+                                self.speak(f'This poem is by {author}', keep_status=status_text)
+                            
                             lines = str(content).split('\n')
                             print(f'[INFO] Total de linhas: {len(lines)}')
                             for i, line in enumerate(lines):
                                 clean_line = line.strip()
                                 if clean_line:
                                     print(f'[INFO] Lendo linha {i + 1}: {clean_line[:50]}...')
-                                    self.speak(clean_line)
+                                    # Manter status do poema enquanto recita
+                                    self.speak(clean_line, keep_status=status_text)
 
                             self.speak('That was the poem!')
+                            self.status_updated.emit('listening')
 
                     if result == 'quit':
                         self.speak(''.join(random.sample(respostas[4], k=1)))

@@ -28,13 +28,15 @@ class MainScreen(QMainWindow):
         layout = QVBoxLayout(central_widget)
         layout.setSpacing(20)
         layout.setContentsMargins(10, 10, 10, 10)
-        layout.setAlignment(Qt.AlignCenter)
         
         # Configurar fundo escuro
         palette = self.palette()
         palette.setColor(QPalette.Window, QColor(30, 30, 40))
         self.setPalette(palette)
         self.setAutoFillBackground(True)
+        
+        # Espaço flexível no topo (centraliza verticalmente)
+        layout.addStretch()
         
         # Título
         self.title_label = QLabel("Caliope")
@@ -68,7 +70,7 @@ class MainScreen(QMainWindow):
         self.info_label.setStyleSheet("color: #90EE90; margin-top: 20px;")
         layout.addWidget(self.info_label, alignment=Qt.AlignCenter)
         
-        # Adicionar espaço flexível
+        # Espaço flexível no final (centraliza verticalmente)
         layout.addStretch()
 
     def setup_status_signal(self):
