@@ -45,9 +45,9 @@ class MainScreen(QMainWindow):
         # Título
         self.title_label = QLabel("Caliope")
         self.title_label.setAlignment(Qt.AlignCenter)
-        title_font = QFont("Arial", 40, QFont.Bold)
+        title_font = QFont("Trebuchet MS", 40, QFont.Bold)
         self.title_label.setFont(title_font)
-        self.title_label.setStyleSheet("color: #4A90E2;")
+        self.title_label.setStyleSheet("color: #b174e7;")
         layout.addWidget(self.title_label, alignment=Qt.AlignCenter)
         
         # Indicador visual (GIF animado)
