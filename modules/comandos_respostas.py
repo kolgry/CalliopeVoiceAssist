@@ -10,7 +10,6 @@ poemas = ['read a poem', 'poem', 'recite a poem', 'tell me a poem', 'read me a p
 
 comandos = [funcoes, lembretes, ajuda, horas, data, analysis_mode, agenda, poemas]
 
-
 # Respostas
 funcionalidades = 'Record reminders, search on Google, tell the time, tell the date, tell scheduled events for the day. I am also able to recite poems!'
 respostas_conclusao = ['Ok!', 'Done!', 'Completed!', 'All set!', 'Finished!']
