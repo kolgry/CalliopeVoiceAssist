@@ -9,8 +9,8 @@ if __name__ == '__main__':
     window = MainScreen()
     window.show()
     
-    # Inicia o worker do assistente em thread separada
-    assistente_worker = AssistenteWorker()
+    # Inicia o worker do assistente em thread separada, passando a janela
+    assistente_worker = AssistenteWorker(window)
     assistente_worker.start()
     
     sys.exit(app.exec())
