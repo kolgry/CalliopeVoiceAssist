@@ -12,7 +12,7 @@ class StatusSignal(QObject):
 class MainScreen(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Caliope Voice Assistant")
+        self.setWindowTitle("Calliope Voice Assistant")
         self.setFixedSize(700, 600)
         self.setup_ui()
         self.setup_status_signal()
