@@ -51,7 +51,6 @@ class BrowserManager:
             print("[WARNING] No specific browsers found, will use system default")
 
     def get_browser(self):
-        """Get a browser controller with fallback support"""
         if not self.available_browsers:
             return wb.get()
 
@@ -70,7 +69,6 @@ class BrowserManager:
         return wb.get()
 
     def open_url(self, url):
-        """Open URL with the best available browser"""
         try:
             browser = self.get_browser()
             browser.open(url)
