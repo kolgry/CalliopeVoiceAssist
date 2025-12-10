@@ -12,36 +12,34 @@ import numpy as np
 import librosa
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-from assistente import browser_manager
-from modules.browserManager import BrowserManager
-
 sns.set()
-
 from modules import carrega_agenda, comandos_respostas, getPoem
+from modules.browserManager import BrowserManager
 comandos = comandos_respostas.comandos
 respostas = comandos_respostas.respostas
 
 class AssistenteWorker(QThread):
-    """Executa o assistente em thread separada"""
+    status_updated = Signal(str)
+
+    browser_manager = BrowserManager()
     
-    def __init__(self):
+    def __init__(self, main_window):
         super().__init__()
-        self.browser_manager = BrowserManager()
+        self.main_window = main_window
         self.meu_nome = 'Calliope'
-        self.chrome_path = 'C:/Program Files/Google/Chrome/Application/chrome.exe %s'
+        self.browser_manager = BrowserManager()
         
-        # Carregar hora e data
         self.hour = datetime.datetime.now().strftime('%H:%M')
         self.date = datetime.date.today().strftime('%d/%B/%Y')
         self.date = self.date.split('/')
         
-        # Carregar modelo
         self.model_type = 'EMOÇÃO'
         self.loaded_model = self.load_model_by_name(self.model_type)
         
         self.playing = False
         self.mode_control = False
+        
+        self.status_updated.connect(self.main_window.status_signal.status_changed.emit)
 
     def load_model_by_name(self, model_type):
         if model_type == 'EMOÇÃO':
@@ -50,9 +48,11 @@ class AssistenteWorker(QThread):
             SAMPLE_RATE = 48000
         return model, model_dict, SAMPLE_RATE
 
-    def speak(self, audio):
-        """Função para falar usando pyttsx3"""
+    def speak(self, audio, keep_status=None):
         try:
+            if keep_status is None:
+                self.status_updated.emit("responding")
+            
             engine = pyttsx3.init()
             voices = engine.getProperty('voices')
             engine.setProperty('voice', voices[1].id)
@@ -60,15 +60,23 @@ class AssistenteWorker(QThread):
             engine.setProperty('volume', 1)
             engine.say(str(audio))
             engine.runAndWait()
+            
+            if keep_status is not None:
+                self.status_updated.emit(keep_status)
+            else:
+                self.status_updated.emit("listening")
         except Exception as e:
             print(f'Erro ao falar: {e}')
+            if keep_status is not None:
+                self.status_updated.emit(keep_status)
+            else:
+                self.status_updated.emit("listening")
 
     def listen_microphone(self):
-        """Captura áudio do microfone"""
+        self.status_updated.emit("listening")
         microfone = sr.Recognizer()
         with sr.Microphone() as source:
             microfone.adjust_for_ambient_noise(source, duration=0.8)
-            print('Listening...')
             audio = microfone.listen(source)
             with open('recordings/speech.wav', 'wb') as f:
                 f.write(audio.get_wav_data())
@@ -78,15 +86,16 @@ class AssistenteWorker(QThread):
             print('You said:' + frase)
         except sr.UnknownValueError:
             frase = ''
+            self.status_updated.emit("dont understand")
             print('Could not understand audio')
         return frase
 
     def search(self, frase):
+        self.status_updated.emit("search | searching...")
         url = 'https://www.google.com/search?q=' + frase
-        browser_manager.open_url(url)
+        self.browser_manager.open_url(url)
 
     def predict_sound(self, AUDIO, SAMPLE_RATE, plot=True):
-        """Prediz emoção do áudio"""
         results = []
         wav_data, sample_rate = librosa.load(AUDIO, sr=SAMPLE_RATE)
 
@@ -121,24 +130,21 @@ class AssistenteWorker(QThread):
         return max(count_results)
 
     def play_music_youtube(self, emocao):
-        """Toca música no YouTube baseado na emoção"""
         play = False
         if emocao == 'sad' or emocao == 'fear':
-            url = 'https://www.youtube.com/watch?v=k32IPg4dbz0&ab_channel=Amelhorm%C3%BAsicainstrumental'
-            play = browser_manager.open_url(url)
-        elif emocao == 'angry' or emocao == 'surprised':
-            url = 'https://www.youtube.com/watch?v=pWjmpSD-ph0&ab_channel=CassioToledo'
-            play = browser_manager.open_url(url)
+            wb.get(self.chrome_path).open('https://www.youtube.com/watch?v=k32IPg4dbz0&ab_channel=Amelhorm%C3%BAsicainstrumental')
+            play = True
+        if emocao == 'angry' or emocao == 'surprised':
+            wb.get(self.chrome_path).open('https://www.youtube.com/watch?v=pWjmpSD-ph0&ab_channel=CassioToledo')
+            play = True
         return play
 
     def test_models(self):
-        """Testa modelo de emoção"""
         audio_source = 'recordings/speech.wav'
         prediction = self.predict_sound(audio_source, self.loaded_model[2], plot=False)
         return prediction
 
     def run(self):
-        """Loop principal do assistente"""
         print('[INFO] Ready to Begin!')
         playsound('n1.mp3')
 
@@ -176,6 +182,7 @@ class AssistenteWorker(QThread):
                     if result in comandos[2]:
                         playsound('n2.mp3')
                         self.speak(''.join(random.sample(respostas[2], k=1)))
+                        self.status_updated.emit('search')
                         result = self.listen_microphone()
                         self.search(result)
 
@@ -209,85 +216,47 @@ class AssistenteWorker(QThread):
                             else:
                                 self.speak('"There are no events scheduled for today starting from the current time!')
 
-                    if result in comandos[7]:  # Regular poems
+                    if result in comandos[7]:
                         playsound('n2.mp3')
                         self.speak(''.join(random.sample(respostas[5], k=1)))
 
                         print('[INFO] Carregando poema...')
-                        title, author, content = getPoem.get_random_poem(truncate=True, filter_by_size=True)
+                        title, author, content = getPoem.get_random_poem()
 
                         if content is None:
                             self.speak('Sorry, I could not load a poem at this moment.')
+                            self.status_updated.emit('Error loading poem')
                             print('[ERROR] Falha ao carregar poema')
                         else:
                             print(f'[INFO] Poema carregado: {title} por {author}')
-
+                            
+                            status_text = ''
                             if title and author:
-                                self.speak(f'The poem is titled: {title}, by {author}')
+                                status_text = f'{title} | by {author}'
                             elif title:
-                                self.speak(f'The poem is titled: {title}')
+                                status_text = f'{title}'
                             elif author:
-                                self.speak(f'This poem is by {author}')
-
+                                status_text = f'by {author}'
+                            
+                            self.status_updated.emit(status_text)
+                            
+                            if title and author:
+                                self.speak(f'The poem is titled: {title}, by {author}', keep_status=status_text)
+                            elif title:
+                                self.speak(f'The poem is titled: {title}', keep_status=status_text)
+                            elif author:
+                                self.speak(f'This poem is by {author}', keep_status=status_text)
+                            
                             lines = str(content).split('\n')
                             print(f'[INFO] Total de linhas: {len(lines)}')
                             for i, line in enumerate(lines):
                                 clean_line = line.strip()
                                 if clean_line:
                                     print(f'[INFO] Lendo linha {i + 1}: {clean_line[:50]}...')
-                                    self.speak(clean_line)
+                                    self.speak(clean_line, keep_status=status_text)
 
                             self.speak('That was the poem!')
-
-                    if result in comandos[8]:  # Short poems - NEW
-                        playsound('n2.mp3')
-                        self.speak('Here is a short poem for you!')
-
-                        print('[INFO] Carregando poema curto...')
-                        title, author, content = getPoem.get_short_poem()
-
-                        if content is None:
-                            self.speak('Sorry, I could not load a poem at this moment.')
-                        else:
-                            if title and author:
-                                self.speak(f'The poem is titled: {title}, by {author}')
-                            elif title:
-                                self.speak(f'The poem is titled: {title}')
-                            elif author:
-                                self.speak(f'This poem is by {author}')
-
-                            lines = str(content).split('\n')
-                            for i, line in enumerate(lines):
-                                clean_line = line.strip()
-                                if clean_line:
-                                    self.speak(clean_line)
-
-                            self.speak('That was the poem!')
-
-                    if result in comandos[9]:  # Medium poems - NEW
-                        playsound('n2.mp3')
-                        self.speak('Here is a medium length poem for you!')
-
-                        print('[INFO] Carregando poema médio...')
-                        title, author, content = getPoem.get_medium_poem()
-
-                        if content is None:
-                            self.speak('Sorry, I could not load a poem at this moment.')
-                        else:
-                            if title and author:
-                                self.speak(f'The poem is titled: {title}, by {author}')
-                            elif title:
-                                self.speak(f'The poem is titled: {title}')
-                            elif author:
-                                self.speak(f'This poem is by {author}')
-
-                            lines = str(content).split('\n')
-                            for i, line in enumerate(lines):
-                                clean_line = line.strip()
-                                if clean_line:
-                                    self.speak(clean_line)
-
-                            self.speak('That was the poem!')
+                            self.status_updated.emit('listening')
 
                     if result == 'quit':
                         self.speak(''.join(random.sample(respostas[4], k=1)))
